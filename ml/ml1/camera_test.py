@@ -13,7 +13,7 @@ import cv2
 
 def run_camera_test():
     # Step 1: Open the default webcam (index 0 is usually the built-in camera)
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     # Graceful error check: verify if the camera opened successfully
     if not cap.isOpened():
