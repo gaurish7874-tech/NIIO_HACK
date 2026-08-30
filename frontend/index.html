@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wellness Monitor Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    video { width: 100%; max-height: 420px; background: #111; }
+    button { margin: .5rem .5rem .5rem 0; padding: .6rem 1rem; cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    #status { min-height: 1.5rem; }
+    pre { white-space: pre-wrap; background: #f3f3f3; padding: 1rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Wellness Monitor Test</h1>
+  <p>Allow camera access, record a short sample, then send it to the backend.</p>
+  <video id="preview" autoplay muted playsinline></video>
+  <div>
+    <button id="startCamera">Allow Camera</button>
+    <button id="startRecording" disabled>Start Recording</button>
+    <button id="stopRecording" disabled>Stop and Analyze</button>
+  </div>
+  <p id="status">Ready.</p>
+  <h2>Backend Response</h2>
+  <pre id="output">No result yet.</pre>
+
+  <script>
+    const preview = document.getElementById('preview');
+    const startCamera = document.getElementById('startCamera');
+    const startRecording = document.getElementById('startRecording');
+    const stopRecording = document.getElementById('stopRecording');
+    const status = document.getElementById('status');
+    const output = document.getElementById('output');
+
+    let stream;
+    let recorder;
+    let chunks = [];
+    let sessionId;
+
+    function setStatus(message) {
+      status.textContent = message;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.detail || `Request failed (${response.status})`);
+      }
+      return body;
+    }
+
+    startCamera.addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        preview.srcObject = stream;
+        startCamera.disabled = true;
+        startRecording.disabled = false;
+        setStatus('Camera ready. Start a recording when ready.');
+      } catch (error) {
+        setStatus(`Camera access failed: ${error.message}`);
+      }
+    });
+
+    startRecording.addEventListener('click', async () => {
+      try {
+        const session = await api('/sessions', { method: 'POST' });
+        sessionId = session.session_id;
+        chunks = [];
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+          ? 'video/webm;codecs=vp8'
+          : 'video/webm';
+        recorder = new MediaRecorder(stream, { mimeType });
+        recorder.ondataavailable = event => {
+          if (event.data.size > 0) chunks.push(event.data);
+        };
+        recorder.onstop = uploadRecording;
+        recorder.start();
+        startRecording.disabled = true;
+        stopRecording.disabled = false;
+        setStatus('Recording for 10 seconds...');
+        window.setTimeout(() => {
+          if (recorder && recorder.state === 'recording') recorder.stop();
+        }, 10000);
+      } catch (error) {
+        setStatus(`Could not start session: ${error.message}`);
+      }
+    });
+
+    stopRecording.addEventListener('click', () => {
+      if (recorder && recorder.state === 'recording') recorder.stop();
+    });
+
+    async function uploadRecording() {
+      stopRecording.disabled = true;
+      setStatus('Uploading video and running ML1/ML2. This may take a while...');
+      try {
+        const videoBlob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
+        const form = new FormData();
+        form.append('file', videoBlob, 'camera-recording.webm');
+        const result = await api(`/sessions/${sessionId}/analyze`, {
+          method: 'POST',
+          body: form
+        });
+        output.textContent = JSON.stringify(result, null, 2);
+        setStatus('Analysis complete.');
+      } catch (error) {
+        output.textContent = error.message;
+        setStatus('Analysis failed.');
+      } finally {
+        startRecording.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
