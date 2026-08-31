@@ -1,0 +1,37 @@
+.env
+
+# Local Python environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local IDE and operating-system files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.log
+.DS_Store
+Thumbs.db
+
+# ML runtime state and generated vector indexes
+ml/ml2/chroma_db/
+ml/ml2/user_profile.json
+
+# Local logs and temporary media
+*.log
+*.tmp
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm

@@ -2,3 +2,14 @@ numpy
 scipy
 opencv-python
 mediapipe
+
+# ML-2 Dependencies (Triage + RAG Layer)
+openai          # Groq client (OpenAI-compatible API)
+chromadb        # Vector database for RAG knowledge base
+pydantic        # Structured output schemas
+python-dotenv   # Load GROQ_API_KEY from .env
+
+# Backend API
+fastapi
+uvicorn[standard]
+python-multipart
