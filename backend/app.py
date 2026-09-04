@@ -63,6 +63,10 @@ async def analyze(session_id: str, file: UploadFile = File(...)) -> AnalysisResp
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
+        import traceback
+        with open("error.log", "w") as f:
+            traceback.print_exc(file=f)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Analysis failed.") from error
 
 

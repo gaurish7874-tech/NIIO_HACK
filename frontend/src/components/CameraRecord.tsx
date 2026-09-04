@@ -15,14 +15,11 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
   const [isRecording, setIsRecording] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   
-  // Track if we are in continuous live mode
-  const isLiveMode = useRef(false);
   // Keep track of the active recorder so we can stop it if needed
   const activeRecorder = useRef<MediaRecorder | null>(null);
 
   useEffect(() => {
     return () => {
-      isLiveMode.current = false;
       if (activeRecorder.current && activeRecorder.current.state === 'recording') {
         activeRecorder.current.stop();
       }
@@ -45,7 +42,7 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
     }
   };
 
-  const startLiveMonitor = async () => {
+  const recordAndAnalyze = async () => {
     try {
       setErrorMsg('');
       let currentSessionId = sessionId;
@@ -59,58 +56,39 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
 
       if (!stream) return;
       
-      isLiveMode.current = true;
       setIsRecording(true);
       
       const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
         ? 'video/webm;codecs=vp8'
         : 'video/webm';
         
-      recordNextChunk(currentSessionId as string, mimeType);
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      activeRecorder.current = mediaRecorder;
+      const localChunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) localChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        setIsRecording(false);
+        if (localChunks.length > 0) {
+          uploadChunk(currentSessionId as string, mimeType, localChunks);
+        }
+      };
+
+      mediaRecorder.start();
+
+      // Record for 5 seconds
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+      }, 5000);
       
     } catch (err: any) {
-      setErrorMsg(`Failed to start monitoring: ${err.message}`);
+      setErrorMsg(`Failed to start recording: ${err.message}`);
       setIsRecording(false);
-      isLiveMode.current = false;
-    }
-  };
-
-  const recordNextChunk = (sid: string, mimeType: string) => {
-    if (!isLiveMode.current || !stream) return;
-
-    const mediaRecorder = new MediaRecorder(stream, { mimeType });
-    activeRecorder.current = mediaRecorder;
-    const localChunks: Blob[] = [];
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) localChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = () => {
-      if (localChunks.length > 0) {
-        uploadChunk(sid, mimeType, localChunks);
-      }
-      // Start the next chunk immediately if still in live mode
-      if (isLiveMode.current) {
-        recordNextChunk(sid, mimeType);
-      }
-    };
-
-    mediaRecorder.start();
-
-    // Record for 5 seconds
-    setTimeout(() => {
-      if (mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-      }
-    }, 5000);
-  };
-
-  const stopLiveMonitor = () => {
-    isLiveMode.current = false;
-    setIsRecording(false);
-    if (activeRecorder.current && activeRecorder.current.state === 'recording') {
-      activeRecorder.current.stop();
     }
   };
 
@@ -133,11 +111,7 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
     } catch (err: any) {
       setErrorMsg(err.message);
     } finally {
-      // We don't set isAnalyzing to false immediately because the next chunk might be recording/uploading soon,
-      // but if we stopped, we should clear it.
-      if (!isLiveMode.current) {
-        setIsAnalyzing(false);
-      }
+      setIsAnalyzing(false);
     }
   };
 
@@ -184,28 +158,19 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
         {!stream ? (
-          <button className="btn btn-outline" onClick={startCamera} style={{ gridColumn: 'span 2' }}>
+          <button className="btn btn-outline" onClick={startCamera}>
             Enable Camera
           </button>
         ) : (
-          <>
-            <button 
-              className="btn btn-primary" 
-              onClick={startLiveMonitor} 
-              disabled={isRecording}
-            >
-              <Video size={16} /> Live Monitor
-            </button>
-            <button 
-              className="btn btn-outline" 
-              onClick={stopLiveMonitor} 
-              disabled={!isRecording}
-            >
-              <Square size={16} /> Stop
-            </button>
-          </>
+          <button 
+            className="btn btn-primary" 
+            onClick={recordAndAnalyze} 
+            disabled={isRecording || isAnalyzing}
+          >
+            <Video size={16} /> Record & Analyze (5s)
+          </button>
         )}
       </div>
 

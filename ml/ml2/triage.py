@@ -71,7 +71,6 @@ def _call_groq(system_prompt: str, user_prompt: str) -> str:
         ],
         temperature=GROQ_TEMPERATURE,
         max_tokens=GROQ_MAX_TOKENS,
-        response_format={"type": "json_object"},
     )
     return response.choices[0].message.content.strip()
 

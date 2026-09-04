@@ -64,15 +64,15 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
     # Blink contribution
     blink_arousal = (blink - 17.0) / 15.0  # elevated blink = higher arousal
 
-    # Eye closure is inverse arousal (drowsy = low arousal)
-    eye_arousal = -eye_closure * 2.0  # Strong negative contribution when eyes closing
+    # Eye closure is inverse arousal (drowsy = low arousal). Relax the penalty.
+    eye_arousal = -(eye_closure - 0.1) * 1.5  
 
     arousal = (
-        hr_arousal * 0.30
-        + bp_arousal * 0.25
-        + resp_arousal * 0.15
-        + blink_arousal * 0.15
-        + eye_arousal * 0.15
+        hr_arousal * 0.40
+        + bp_arousal * 0.30
+        + resp_arousal * 0.10
+        + blink_arousal * 0.10
+        + eye_arousal * 0.10
     )
     arousal = max(-1.0, min(1.0, arousal))
 
@@ -83,31 +83,18 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
     #   Positive: stable gaze, normal BP, moderate HR, low eye closure
     #   Negative: unstable gaze, high BP, extreme HR, high eye closure
     # -----------------------------------------------------------------------
-    gaze = behavioral.get("gaze_stability", 0.5)
     head_yaw = abs(behavioral.get("head_pose", {}).get("yaw", 0))
     head_pitch = behavioral.get("head_pose", {}).get("pitch", 0)
 
-    # Gaze stability: stable = positive, erratic = negative
-    gaze_valence = (gaze - 0.5) * 1.5  # Range: roughly -0.75 to +0.75
+    # BP health: closer to baseline = positive, deviating = negative.
+    bp_valence = 1.0 - (abs(sys_bp - 120.0) / 40.0)  
 
-    # BP health: closer to baseline = positive, deviating/high = negative
-    bp_valence = 1.0 - (abs(sys_bp - 120.0) / 20.0)  # Positive when BP is close to 120
-
-    # Eye closure: open = positive, closed = negative
-    eye_valence = -(eye_closure - 0.1) * 2.0
-
-    # Head restlessness: high yaw = negative
-    head_valence = -(head_yaw / 20.0)
-
-    # Head drooping (pitch) = negative
-    droop_valence = -(max(0, head_pitch - 5) / 15.0)
+    # Eye closure: open = positive, closed = negative.
+    eye_valence = (0.25 - eye_closure) * 2.0
 
     valence = (
-        gaze_valence * 0.30
-        + bp_valence * 0.25
-        + eye_valence * 0.20
-        + head_valence * 0.15
-        + droop_valence * 0.10
+        bp_valence * 0.60
+        + eye_valence * 0.40
     )
     valence = max(-1.0, min(1.0, valence))
 
