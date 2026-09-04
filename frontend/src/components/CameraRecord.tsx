@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, Video, Square, Loader2 } from 'lucide-react';
+import { Camera, Video, Loader2 } from 'lucide-react';
 
 interface CameraRecordProps {
   sessionId: string | null;
@@ -79,12 +79,12 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
 
       mediaRecorder.start();
 
-      // Record for 5 seconds
+      // Record for 10 seconds
       setTimeout(() => {
         if (mediaRecorder.state === 'recording') {
           mediaRecorder.stop();
         }
-      }, 5000);
+      }, 10000);
       
     } catch (err: any) {
       setErrorMsg(`Failed to start recording: ${err.message}`);
@@ -169,7 +169,7 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
             onClick={recordAndAnalyze} 
             disabled={isRecording || isAnalyzing}
           >
-            <Video size={16} /> Record & Analyze (5s)
+            <Video size={16} /> Record & Analyze (10s)
           </button>
         )}
       </div>

@@ -1,132 +1,95 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Clinical Light Mode Colors */
-  --bg-color: #f8fafc;        /* Soft off-white */
-  --surface: #ffffff;         /* Pure white cards */
+  --bg-color: #f8fafc;
+  --surface: #ffffff;
   --surface-hover: #f1f5f9;
-  
-  --border: #e2e8f0;          /* Subtle thin borders */
+  --border: #e2e8f0;
   --border-strong: #cbd5e1;
-  
-  --text-main: #0f172a;       /* Slate 900 for high contrast readability */
-  --text-muted: #64748b;      /* Slate 500 for secondary text */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
   --text-inverse: #ffffff;
-  
-  /* Semantic Colors - Muted and Calm */
-  --primary: #475569;         /* Slate 600 - calm, neutral primary */
-  --primary-hover: #334155;
-  --accent: #10b981;          /* Sage green - healthy status */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --accent: #10b981;
   --accent-light: #d1fae5;
-  --danger: #ef4444;          /* Soft red - alert */
+  --danger: #ef4444;
   --danger-light: #fee2e2;
-  --warning: #f59e0b;         /* Amber - caution */
+  --warning: #f59e0b;
   --warning-light: #fef3c7;
-  --info: #3b82f6;            /* Calm blue */
-  --info-light: #dbeafe;
-
-  /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  
-  /* Shadows & Effects */
-  /* Very subtle, barely-there shadows for elevation only when needed */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --info: #38bdf8;
+  --info-light: #e0f2fe;
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 6%);
+  --shadow-md: 0 14px 35px rgb(15 23 42 / 10%);
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
   --radius-full: 9999px;
-  
-  /* Transitions */
-  --transition-fast: 0.15s ease-in-out;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-family);
-  background: var(--bg-color);
-  color: var(--text-main);
-  min-height: 100vh;
-  line-height: 1.5;
+  --transition-fast: 0.16s ease;
+  font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.2;
-  margin-bottom: 0.5rem;
-  color: var(--text-main);
-  letter-spacing: -0.01em;
+* {
+  box-sizing: border-box;
 }
 
-p {
-  margin-bottom: 1rem;
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #f8fafc;
+  scroll-behavior: smooth;
 }
 
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    linear-gradient(180deg, rgb(219 234 254 / 58%) 0, rgb(248 250 252 / 0%) 310px),
+    #f8fafc;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+button,
 a {
-  color: var(--info);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-a:hover {
-  color: var(--primary);
+  -webkit-tap-highlight-color: transparent;
 }
 
 button {
-  font-family: inherit;
+  border: 0;
   cursor: pointer;
-  border: none;
-  outline: none;
 }
 
-/* Flat Surface Utilities instead of Glassmorphism */
-.surface {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-/* Typography Utilities */
-.text-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
+h1,
+h2,
+h3,
+p {
+  margin-block-start: 0;
 }
 
-/* Base Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+#root {
+  min-height: 100vh;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent; 
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-strong); 
-  border-radius: var(--radius-full);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted); 
+::selection {
+  color: #ffffff;
+  background: #2563eb;
 }

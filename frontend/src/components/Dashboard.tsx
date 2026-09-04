@@ -31,13 +31,10 @@ export default function Dashboard({ result, isAnalyzing }: { result: any, isAnal
 
   // Determine colors based on score
   let scoreColor = 'var(--accent)';
-  let scoreBg = 'var(--accent-light)';
   if (score < 50) {
     scoreColor = 'var(--danger)';
-    scoreBg = 'var(--danger-light)';
   } else if (score < 75) {
     scoreColor = 'var(--warning)';
-    scoreBg = 'var(--warning-light)';
   }
 
   return (
