@@ -32,7 +32,8 @@ class WellnessTimeline:
         self.history.append({
             "timestamp": time.time(),
             "hr": vitals.get("physio", {}).get("hr"),
-            "hrv": vitals.get("physio", {}).get("hrv"),
+            "bp_sys": vitals.get("physio", {}).get("bp_sys"),
+            "bp_dia": vitals.get("physio", {}).get("bp_dia"),
             "respiration": vitals.get("physio", {}).get("respiration"),
             "blink_rate": vitals.get("behavioral", {}).get("blink_rate"),
             "gaze_stability": vitals.get("behavioral", {}).get("gaze_stability"),
@@ -81,12 +82,12 @@ class WellnessTimeline:
         trends = {}
         alerts = []
 
-        # Analyze each signal
-        signal_keys = ["hr", "hrv", "respiration", "blink_rate", "gaze_stability",
+        signal_keys = ["hr", "bp_sys", "bp_dia", "respiration", "blink_rate", "gaze_stability",
                        "eye_closure", "wellness_score"]
         signal_labels = {
             "hr": "Heart Rate",
-            "hrv": "HRV",
+            "bp_sys": "Systolic BP",
+            "bp_dia": "Diastolic BP",
             "respiration": "Respiration Rate",
             "blink_rate": "Blink Rate",
             "gaze_stability": "Gaze Stability",
@@ -151,7 +152,7 @@ class WellnessTimeline:
         if duration_min >= 1:
             narrative_parts.append(f"Monitoring for {duration_min} minutes ({len(snapshots)} readings).")
 
-        for key in ["hr", "hrv", "wellness_score"]:
+        for key in ["hr", "bp_sys", "wellness_score"]:
             t = trends.get(key, {})
             label = signal_labels.get(key, key)
             if t.get("direction") not in ("stable", "unknown") and abs(t.get("change_pct", 0)) >= 10:
@@ -205,7 +206,7 @@ class WellnessTimeline:
         }
 
         # Signal statistics
-        for key in ["hr", "hrv", "respiration", "blink_rate", "gaze_stability",
+        for key in ["hr", "bp_sys", "bp_dia", "respiration", "blink_rate", "gaze_stability",
                      "eye_closure", "wellness_score"]:
             vals = [s[key] for s in snapshots if s.get(key) is not None]
             if vals:

@@ -18,11 +18,16 @@ def _normalize_hr(hr: float, baseline_hr: float = 72.0) -> float:
     return max(0.0, 1.0 - (deviation / 50.0))
 
 
-def _normalize_hrv(hrv: float, baseline_hrv: float = 50.0) -> float:
-    """Score HRV: higher = better. 1.0 at 60+ms, 0.0 at 0ms."""
-    if hrv is None:
+def _normalize_bp(sys: float, dia: float, baseline_sys: float = 120.0, baseline_dia: float = 80.0) -> float:
+    """Score BP: closer to baseline (or 120/80) = better. 1.0 at ideal, 0.0 at extremes."""
+    if sys is None or dia is None:
         return 0.5
-    return min(hrv / max(baseline_hrv * 1.2, 60.0), 1.0)
+    sys_dev = abs(sys - baseline_sys)
+    dia_dev = abs(dia - baseline_dia)
+    # E.g., dev of 40 in sys or 30 in dia means score 0
+    sys_score = max(0.0, 1.0 - (sys_dev / 40.0))
+    dia_score = max(0.0, 1.0 - (dia_dev / 30.0))
+    return (sys_score + dia_score) / 2.0
 
 
 def _normalize_respiration(resp: float, baseline_resp: float = 15.0) -> float:
@@ -56,7 +61,7 @@ def compute_wellness_score(vitals: dict, baseline: dict = None) -> dict:
     Parameters:
         vitals: The multimodal JSON from ML-1.
         baseline: Optional user baseline from calibration.
-                  Keys: hr, hrv, respiration, blink_rate
+                  Keys: hr, bp_sys, bp_dia, respiration, blink_rate
 
     Returns:
         dict with:
@@ -70,13 +75,14 @@ def compute_wellness_score(vitals: dict, baseline: dict = None) -> dict:
 
     # Use baseline if available, otherwise use population defaults
     b_hr = baseline.get("hr", 72.0) if baseline else 72.0
-    b_hrv = baseline.get("hrv", 50.0) if baseline else 50.0
+    b_sys = baseline.get("bp_sys", 120.0) if baseline else 120.0
+    b_dia = baseline.get("bp_dia", 80.0) if baseline else 80.0
     b_resp = baseline.get("respiration", 15.0) if baseline else 15.0
     b_blink = baseline.get("blink_rate", 17.0) if baseline else 17.0
 
     # Calculate individual signal scores (0.0 to 1.0)
     hr_score = _normalize_hr(physio.get("hr"), b_hr)
-    hrv_score = _normalize_hrv(physio.get("hrv"), b_hrv)
+    bp_score = _normalize_bp(physio.get("bp_sys"), physio.get("bp_dia"), b_sys, b_dia)
     resp_score = _normalize_respiration(physio.get("respiration"), b_resp)
     blink_score = _normalize_blink(behavioral.get("blink_rate", 17.0), b_blink)
     gaze_score = _normalize_gaze(behavioral.get("gaze_stability", 0.5))
@@ -89,7 +95,7 @@ def compute_wellness_score(vitals: dict, baseline: dict = None) -> dict:
     # Weighted composite (physio slightly more important for wellness)
     weights = {
         "heart_rate": 0.22,
-        "hrv": 0.18,
+        "blood_pressure": 0.18,
         "respiration": 0.10,
         "blink_rate": 0.10,
         "gaze_stability": 0.15,
@@ -101,7 +107,7 @@ def compute_wellness_score(vitals: dict, baseline: dict = None) -> dict:
 
     raw_score = (
         hr_score * weights["heart_rate"]
-        + hrv_score * weights["hrv"]
+        + bp_score * weights["blood_pressure"]
         + resp_score * weights["respiration"]
         + blink_score * weights["blink_rate"]
         + gaze_score * weights["gaze_stability"]
@@ -132,7 +138,7 @@ def compute_wellness_score(vitals: dict, baseline: dict = None) -> dict:
 
     breakdown = {
         "heart_rate": round(hr_score, 2),
-        "hrv": round(hrv_score, 2),
+        "blood_pressure": round(bp_score, 2),
         "respiration": round(resp_score, 2),
         "blink_rate": round(blink_score, 2),
         "gaze_stability": round(gaze_score, 2),

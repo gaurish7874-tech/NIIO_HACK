@@ -32,7 +32,8 @@ def analyze_multimodal_wellness(frame_buffer: list, fps: float = 30.0) -> dict:
                 "timestamp": "2026-08-19T16:59:13Z",
                 "physio": {
                     "hr": float or None,
-                    "hrv": float or None,
+                    "bp_sys": int or None,
+                    "bp_dia": int or None,
                     "respiration": float or None,
                     "confidence": float
                 },
@@ -63,7 +64,8 @@ def analyze_multimodal_wellness(frame_buffer: list, fps: float = 30.0) -> dict:
         "timestamp": iso_timestamp,
         "physio": {
             "hr": physio_result.get("hr"),
-            "hrv": physio_result.get("hrv"),
+            "bp_sys": physio_result.get("bp_sys"),
+            "bp_dia": physio_result.get("bp_dia"),
             "respiration": physio_result.get("respiration"),
             "confidence": physio_result.get("confidence", 0.0)
         },

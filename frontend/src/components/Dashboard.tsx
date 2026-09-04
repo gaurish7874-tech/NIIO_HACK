@@ -71,8 +71,10 @@ export default function Dashboard({ result, isAnalyzing }: { result: any, isAnal
               <span style={{ fontWeight: 500 }}>{physio.hr?.toFixed(1) || '--'} bpm</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>HRV</span>
-              <span style={{ fontWeight: 500 }}>{physio.hrv?.toFixed(1) || '--'} ms</span>
+              <span style={{ color: 'var(--text-muted)' }}>Blood Pressure</span>
+              <span style={{ fontWeight: 500 }}>
+                {physio.bp_sys ? `${Math.round(physio.bp_sys)}/${Math.round(physio.bp_dia)}` : '--'} mmHg
+              </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Respiration</span>

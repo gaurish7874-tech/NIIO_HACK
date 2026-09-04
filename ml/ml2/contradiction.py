@@ -13,13 +13,13 @@ logger = logging.getLogger("ml2.contradiction")
 # Signal-to-state mapping for comparison
 _STRESS_INDICATORS_PHYSIO = {
     "hr_high": lambda p: (p.get("hr") or 72) > 95,
-    "hrv_low": lambda p: (p.get("hrv") or 50) < 25,
+    "bp_high": lambda p: (p.get("bp_sys") or 120) > 130 or (p.get("bp_dia") or 80) > 85,
     "resp_high": lambda p: (p.get("respiration") or 15) > 20,
 }
 
 _CALM_INDICATORS_PHYSIO = {
     "hr_normal": lambda p: 55 <= (p.get("hr") or 72) <= 85,
-    "hrv_good": lambda p: (p.get("hrv") or 50) > 40,
+    "bp_normal": lambda p: (p.get("bp_sys") or 120) <= 125 and (p.get("bp_dia") or 80) <= 80,
     "resp_normal": lambda p: 12 <= (p.get("respiration") or 15) <= 18,
 }
 
@@ -46,7 +46,7 @@ _CONTRADICTION_TEMPLATES = {
     "physio_stressed_behav_calm": {
         "label": "Internal Stress, External Composure",
         "explanation": (
-            "Your physiological signals (elevated heart rate, low HRV) suggest internal stress, "
+            "Your physiological signals (elevated heart rate, high blood pressure) suggest internal stress, "
             "but your behavioral signals (steady gaze, normal blink rate) show you are externally composed. "
             "This pattern is common in experienced professionals managing pressure. "
             "While you appear calm outwardly, your body is working hard. "
@@ -57,7 +57,7 @@ _CONTRADICTION_TEMPLATES = {
     "physio_calm_behav_stressed": {
         "label": "Restless but Physically Calm",
         "explanation": (
-            "Your physiological signals (normal heart rate, healthy HRV) suggest your body is relaxed, "
+            "Your physiological signals (normal heart rate, normal blood pressure) suggest your body is relaxed, "
             "but your behavioral signals (erratic gaze, elevated blink rate) indicate mental restlessness or distraction. "
             "This could mean environmental distractions, boredom, or early-stage anxiety that hasn't yet "
             "triggered a physical stress response. Consider refocusing with a brief mindfulness exercise."
@@ -67,7 +67,7 @@ _CONTRADICTION_TEMPLATES = {
     "physio_stressed_behav_fatigued": {
         "label": "Stressed but Drowsy (Burnout Pattern)",
         "explanation": (
-            "Your body shows stress signals (elevated HR, low HRV) while your behavioral signals show fatigue "
+            "Your body shows stress signals (elevated HR, high blood pressure) while your behavioral signals show fatigue "
             "(heavy eyelids, slow blinks, head drooping). This combination — being both wired and tired — "
             "is a classic burnout pattern. Your body is in fight-or-flight mode but is too exhausted to sustain it. "
             "This is a strong signal to stop, rest, and recover. Pushing through will likely worsen both conditions."

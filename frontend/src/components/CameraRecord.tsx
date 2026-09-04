@@ -12,13 +12,20 @@ interface CameraRecordProps {
 export default function CameraRecord({ sessionId, setSessionId, setAnalysisResult, isAnalyzing, setIsAnalyzing }: CameraRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const chunks = useRef<Blob[]>([]);
+  
+  // Track if we are in continuous live mode
+  const isLiveMode = useRef(false);
+  // Keep track of the active recorder so we can stop it if needed
+  const activeRecorder = useRef<MediaRecorder | null>(null);
 
   useEffect(() => {
     return () => {
+      isLiveMode.current = false;
+      if (activeRecorder.current && activeRecorder.current.state === 'recording') {
+        activeRecorder.current.stop();
+      }
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
@@ -38,7 +45,7 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
     }
   };
 
-  const startRecording = async () => {
+  const startLiveMonitor = async () => {
     try {
       setErrorMsg('');
       let currentSessionId = sessionId;
@@ -52,45 +59,65 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
 
       if (!stream) return;
       
-      chunks.current = [];
+      isLiveMode.current = true;
+      setIsRecording(true);
+      
       const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
         ? 'video/webm;codecs=vp8'
         : 'video/webm';
-      
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
-      
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.current.push(e.data);
-      };
-      
-      mediaRecorder.onstop = () => uploadRecording(currentSessionId as string, mimeType);
-      
-      mediaRecorder.start();
-      setRecorder(mediaRecorder);
-      setIsRecording(true);
-      
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
-        }
-      }, 10000);
+        
+      recordNextChunk(currentSessionId as string, mimeType);
       
     } catch (err: any) {
-      setErrorMsg(`Failed to start recording: ${err.message}`);
+      setErrorMsg(`Failed to start monitoring: ${err.message}`);
+      setIsRecording(false);
+      isLiveMode.current = false;
     }
   };
 
-  const stopRecording = () => {
-    if (recorder && recorder.state === 'recording') {
-      recorder.stop();
-    }
+  const recordNextChunk = (sid: string, mimeType: string) => {
+    if (!isLiveMode.current || !stream) return;
+
+    const mediaRecorder = new MediaRecorder(stream, { mimeType });
+    activeRecorder.current = mediaRecorder;
+    const localChunks: Blob[] = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) localChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      if (localChunks.length > 0) {
+        uploadChunk(sid, mimeType, localChunks);
+      }
+      // Start the next chunk immediately if still in live mode
+      if (isLiveMode.current) {
+        recordNextChunk(sid, mimeType);
+      }
+    };
+
+    mediaRecorder.start();
+
+    // Record for 5 seconds
+    setTimeout(() => {
+      if (mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+    }, 5000);
   };
 
-  const uploadRecording = async (sid: string, mimeType: string) => {
+  const stopLiveMonitor = () => {
+    isLiveMode.current = false;
     setIsRecording(false);
+    if (activeRecorder.current && activeRecorder.current.state === 'recording') {
+      activeRecorder.current.stop();
+    }
+  };
+
+  const uploadChunk = async (sid: string, mimeType: string, chunkData: Blob[]) => {
     setIsAnalyzing(true);
     try {
-      const videoBlob = new Blob(chunks.current, { type: mimeType });
+      const videoBlob = new Blob(chunkData, { type: mimeType });
       const formData = new FormData();
       formData.append('file', videoBlob, 'camera-recording.webm');
       
@@ -106,7 +133,11 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
     } catch (err: any) {
       setErrorMsg(err.message);
     } finally {
-      setIsAnalyzing(false);
+      // We don't set isAnalyzing to false immediately because the next chunk might be recording/uploading soon,
+      // but if we stopped, we should clear it.
+      if (!isLiveMode.current) {
+        setIsAnalyzing(false);
+      }
     }
   };
 
@@ -162,14 +193,14 @@ export default function CameraRecord({ sessionId, setSessionId, setAnalysisResul
           <>
             <button 
               className="btn btn-primary" 
-              onClick={startRecording} 
-              disabled={isRecording || isAnalyzing}
+              onClick={startLiveMonitor} 
+              disabled={isRecording}
             >
-              <Video size={16} /> Record
+              <Video size={16} /> Live Monitor
             </button>
             <button 
               className="btn btn-outline" 
-              onClick={stopRecording} 
+              onClick={stopLiveMonitor} 
               disabled={!isRecording}
             >
               <Square size={16} /> Stop

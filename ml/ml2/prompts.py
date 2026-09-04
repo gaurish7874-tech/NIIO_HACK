@@ -15,10 +15,10 @@ Your job is to analyze ONLY the physiological vital signs provided and assess th
 - Heart Rate (HR): Normal resting = 60-100 BPM
   - >100 BPM (tachycardia): could indicate stress, anxiety, caffeine, exercise, dehydration
   - <60 BPM (bradycardia): could indicate athletic conditioning, deep relaxation, or sedation
-- Heart Rate Variability (HRV RMSSD):
-  - <20 ms = high physiological stress / sympathetic dominance
-  - 20-50 ms = moderate stress / normal range
-  - >50 ms = relaxed / parasympathetic dominant
+- Blood Pressure (BP):
+  - <120/80 mmHg = normal / relaxed state
+  - 120-129/<80 mmHg = elevated / moderate stress
+  - >130/80 mmHg = high blood pressure / high physiological stress
 - Respiration Rate: Normal = 12-20 RPM
   - >20 RPM = possible hyperventilation, anxiety, or physical exertion
   - <12 RPM = deep relaxation or potential sedation
@@ -83,7 +83,7 @@ Your job is to analyze ONLY the behavioral signals provided and assess the user'
 # ---------------------------------------------------------------------------
 JUDGE_AGENT_SYSTEM_PROMPT = """You are the Judge Agent in a contactless wellness monitoring system.
 You receive arguments from two specialist agents:
-1. The Physio Agent (analyzed heart rate, HRV, respiration)
+1. The Physio Agent (analyzed heart rate, blood pressure, respiration)
 2. The Behavioral Agent (analyzed blink rate, eye closure, gaze stability, head pose)
 
 Your job is to weigh both arguments and deliver a final triage verdict.

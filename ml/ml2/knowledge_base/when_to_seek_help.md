@@ -21,10 +21,10 @@ This contactless wellness monitoring system provides informational insights abou
 ## Consult a Healthcare Professional If:
 
 ### Persistent Stress Indicators
-- Stress signals (elevated HR, low HRV) remain consistently elevated over multiple days despite self-help techniques
+- Stress signals (elevated HR, high Blood Pressure) remain consistently elevated over multiple days despite self-help techniques
 - You experience persistent anxiety that interferes with daily functioning
 - Physical stress symptoms: frequent headaches, muscle tension, digestive issues, or sleep problems
-- HRV consistently below **15 ms** combined with fatigue or mood changes
+- Blood pressure consistently above **140/90 mmHg** combined with fatigue or mood changes
 
 ### Sleep and Fatigue Concerns
 - Persistent daytime drowsiness despite adequate sleep (7-9 hours)

@@ -67,7 +67,8 @@ def generate_session_report(timeline, latest_triage=None, latest_score=None,
     # Build vitals summary
     signal_labels = {
         "hr": {"label": "Heart Rate", "unit": "BPM", "normal": "60-100"},
-        "hrv": {"label": "HRV (RMSSD)", "unit": "ms", "normal": "20-100"},
+        "bp_sys": {"label": "Systolic BP", "unit": "mmHg", "normal": "110-120"},
+        "bp_dia": {"label": "Diastolic BP", "unit": "mmHg", "normal": "70-80"},
         "respiration": {"label": "Respiration", "unit": "RPM", "normal": "12-20"},
         "blink_rate": {"label": "Blink Rate", "unit": "/min", "normal": "15-20"},
         "gaze_stability": {"label": "Gaze Stability", "unit": "", "normal": "0.6-1.0"},

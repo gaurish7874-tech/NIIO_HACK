@@ -40,14 +40,14 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
 
     # Baseline defaults
     b_hr = baseline.get("hr", 72.0) if baseline else 72.0
-    b_hrv = baseline.get("hrv", 50.0) if baseline else 50.0
+    b_sys = baseline.get("bp_sys", 120.0) if baseline else 120.0
 
     # -----------------------------------------------------------------------
     # AROUSAL: How activated/energized is the person?
-    # High HR, low HRV, fast respiration, high blink rate = high arousal
+    # High HR, high BP, fast respiration, high blink rate = high arousal
     # -----------------------------------------------------------------------
     hr = physio.get("hr") or b_hr
-    hrv = physio.get("hrv") or b_hrv
+    sys_bp = physio.get("bp_sys") or b_sys
     resp = physio.get("respiration") or 15.0
     blink = behavioral.get("blink_rate", 17.0)
     eye_closure = behavioral.get("eye_closure", 0.1)
@@ -55,8 +55,8 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
     # HR contribution: normalized around baseline
     hr_arousal = (hr - b_hr) / 40.0  # +1 at baseline+40, -1 at baseline-40
 
-    # HRV contribution: inverse (low HRV = high arousal)
-    hrv_arousal = (b_hrv - hrv) / b_hrv  # +1 when HRV=0, -1 when HRV=2x baseline
+    # BP contribution: higher sys_bp = high arousal
+    bp_arousal = (sys_bp - b_sys) / 40.0  # +1 when sys=160, -1 when sys=80
 
     # Respiration contribution
     resp_arousal = (resp - 15.0) / 10.0  # +1 at 25 RPM, -1 at 5 RPM
@@ -69,7 +69,7 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
 
     arousal = (
         hr_arousal * 0.30
-        + hrv_arousal * 0.25
+        + bp_arousal * 0.25
         + resp_arousal * 0.15
         + blink_arousal * 0.15
         + eye_arousal * 0.15
@@ -80,8 +80,8 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
     # VALENCE: Is the state positive or negative?
     # This is harder to determine from purely physiological signals.
     # We use proxies:
-    #   Positive: stable gaze, good HRV, moderate HR, low eye closure
-    #   Negative: unstable gaze, low HRV, extreme HR, high eye closure
+    #   Positive: stable gaze, normal BP, moderate HR, low eye closure
+    #   Negative: unstable gaze, high BP, extreme HR, high eye closure
     # -----------------------------------------------------------------------
     gaze = behavioral.get("gaze_stability", 0.5)
     head_yaw = abs(behavioral.get("head_pose", {}).get("yaw", 0))
@@ -90,8 +90,8 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
     # Gaze stability: stable = positive, erratic = negative
     gaze_valence = (gaze - 0.5) * 1.5  # Range: roughly -0.75 to +0.75
 
-    # HRV health: good HRV = positive
-    hrv_valence = (hrv - 30.0) / 40.0  # Positive when HRV > 30
+    # BP health: closer to baseline = positive, deviating/high = negative
+    bp_valence = 1.0 - (abs(sys_bp - 120.0) / 20.0)  # Positive when BP is close to 120
 
     # Eye closure: open = positive, closed = negative
     eye_valence = -(eye_closure - 0.1) * 2.0
@@ -104,7 +104,7 @@ def compute_arousal_valence(vitals: dict, baseline: dict = None) -> dict:
 
     valence = (
         gaze_valence * 0.30
-        + hrv_valence * 0.25
+        + bp_valence * 0.25
         + eye_valence * 0.20
         + head_valence * 0.15
         + droop_valence * 0.10

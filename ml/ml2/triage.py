@@ -384,7 +384,8 @@ if __name__ == "__main__":
         "timestamp": "2026-08-19T18:00:00Z",
         "physio": {
             "hr": 105.0,
-            "hrv": 18.0,
+            "bp_sys": 145.0,
+            "bp_dia": 90.0,
             "respiration": 22.0,
             "confidence": 0.85,
         },
@@ -445,7 +446,8 @@ if __name__ == "__main__":
         "timestamp": "2026-08-19T18:05:00Z",
         "physio": {
             "hr": 102.0,
-            "hrv": 19.0,
+            "bp_sys": 140.0,
+            "bp_dia": 88.0,
             "respiration": 21.0,
             "confidence": 0.80,
         },

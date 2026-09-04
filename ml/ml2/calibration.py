@@ -32,7 +32,8 @@ class UserProfile:
         self.calibrated_at = None
         self.baseline = {
             "hr": 72.0,
-            "hrv": 50.0,
+            "bp_sys": 120.0,
+            "bp_dia": 80.0,
             "respiration": 15.0,
             "blink_rate": 17.0,
             "gaze_stability": 0.75,
@@ -51,7 +52,8 @@ class UserProfile:
         reading = {
             "timestamp": time.time(),
             "hr": physio.get("hr"),
-            "hrv": physio.get("hrv"),
+            "bp_sys": physio.get("bp_sys"),
+            "bp_dia": physio.get("bp_dia"),
             "respiration": physio.get("respiration"),
             "blink_rate": behavioral.get("blink_rate"),
             "gaze_stability": behavioral.get("gaze_stability"),
@@ -105,7 +107,8 @@ class UserProfile:
 
         current = {
             "hr": physio.get("hr"),
-            "hrv": physio.get("hrv"),
+            "bp_sys": physio.get("bp_sys"),
+            "bp_dia": physio.get("bp_dia"),
             "respiration": physio.get("respiration"),
             "blink_rate": behavioral.get("blink_rate"),
             "gaze_stability": behavioral.get("gaze_stability"),
@@ -115,7 +118,8 @@ class UserProfile:
         deviations = {}
         labels = {
             "hr": "Heart Rate",
-            "hrv": "HRV",
+            "bp_sys": "Systolic BP",
+            "bp_dia": "Diastolic BP",
             "respiration": "Respiration Rate",
             "blink_rate": "Blink Rate",
             "gaze_stability": "Gaze Stability",

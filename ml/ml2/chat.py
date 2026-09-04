@@ -66,7 +66,7 @@ class WellnessChat:
         context_parts.append(f"""
 ### Physiological Readings
 - Heart Rate: {physio.get('hr', 'N/A')} BPM
-- HRV (RMSSD): {physio.get('hrv', 'N/A')} ms
+- Blood Pressure: {physio.get('bp_sys', 'N/A')}/{physio.get('bp_dia', 'N/A')} mmHg
 - Respiration Rate: {physio.get('respiration', 'N/A')} RPM
 - Signal Confidence: {physio.get('confidence', 'N/A')}
 

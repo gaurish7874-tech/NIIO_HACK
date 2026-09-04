@@ -6,11 +6,11 @@
 - **Bradycardia (<60 BPM):** Common in well-trained athletes and during sleep. May also result from certain medications (beta-blockers). Resting HR below 40 BPM with symptoms (dizziness, fainting) requires medical attention.
 - **Optimal resting HR:** 60-80 BPM for most adults. Lower is generally better for cardiovascular health.
 
-## Heart Rate Variability (HRV - RMSSD)
-- **What it measures:** The variation in time between consecutive heartbeats. Higher HRV generally indicates better cardiovascular fitness and stress resilience.
-- **High HRV (>50 ms):** Indicates parasympathetic (rest-and-digest) dominance. Associated with relaxation, good recovery, and low stress.
-- **Moderate HRV (20-50 ms):** Normal range for most adults during daily activities.
-- **Low HRV (<20 ms):** Indicates sympathetic (fight-or-flight) dominance. Associated with high stress, anxiety, poor sleep, illness, or overtraining. Persistently low HRV (<15 ms) combined with symptoms warrants professional consultation.
+## Blood Pressure (Estimated)
+- **What it measures:** The pressure of circulating blood against the walls of blood vessels. Normal blood pressure is essential for proper blood flow.
+- **Normal (<120/80 mmHg):** Indicates a healthy cardiovascular state and relaxation.
+- **Elevated (120-129/<80 mmHg):** Normal range for most adults during daily activities or moderate stress.
+- **High (>130/80 mmHg):** Indicates potential high stress, anxiety, or physiological strain. Persistently high blood pressure warrants professional consultation.
 
 ## Respiration Rate
 - **Normal range:** 12-20 breaths per minute (RPM) for adults at rest.

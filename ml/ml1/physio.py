@@ -25,7 +25,7 @@ from ml.ml1.signal import RGBSignalBuffer
 from ml.ml1.pos import extract_pos_pulse
 from ml.ml1.filtering import apply_bandpass_filter
 from ml.ml1.heart_rate import calculate_heart_rate
-from ml.ml1.hrv import calculate_hrv_rmssd
+from ml.ml1.bp import estimate_blood_pressure
 from ml.ml1.confidence import calculate_confidence_score
 
 # Locate face_landmarker.task model file
@@ -96,7 +96,8 @@ def extract_physio(frame_buffer: list, fps: float = 30.0) -> dict:
         dict containing:
             {
                 "hr": float or None,          # Heart Rate in BPM
-                "hrv": float or None,         # Experimental RMSSD in ms
+                "bp_sys": int or None,        # Systolic BP in mmHg
+                "bp_dia": int or None,        # Diastolic BP in mmHg
                 "respiration": float or None, # Respiration Rate in RPM
                 "confidence": float           # Quality/Confidence Score (0.0 to 1.0)
             }
@@ -107,7 +108,8 @@ def extract_physio(frame_buffer: list, fps: float = 30.0) -> dict:
     if not isinstance(frame_buffer, (list, tuple, np.ndarray)) or len(frame_buffer) == 0:
         return {
             "hr": None,
-            "hrv": None,
+            "bp_sys": None,
+            "bp_dia": None,
             "respiration": None,
             "confidence": 0.0
         }
@@ -118,7 +120,8 @@ def extract_physio(frame_buffer: list, fps: float = 30.0) -> dict:
     if num_frames < 30:
         return {
             "hr": None,
-            "hrv": None,
+            "bp_sys": None,
+            "bp_dia": None,
             "respiration": None,
             "confidence": 0.0
         }
@@ -161,7 +164,8 @@ def extract_physio(frame_buffer: list, fps: float = 30.0) -> dict:
     if face_ratio < 0.5 or len(signal_buffer) < 30:
         return {
             "hr": None,
-            "hrv": None,
+            "bp_sys": None,
+            "bp_dia": None,
             "respiration": None,
             "confidence": 0.0
         }
@@ -181,7 +185,7 @@ def extract_physio(frame_buffer: list, fps: float = 30.0) -> dict:
     filtered_pulse = apply_bandpass_filter(raw_pulse, fps=fps, lowcut=0.7, highcut=4.0)
 
     hr_info = calculate_heart_rate(filtered_pulse, fps=fps)
-    hrv_info = calculate_hrv_rmssd(hr_info['peak_positions'], fps=fps)
+    sys_bp, dia_bp = estimate_blood_pressure(hr_info['heart_rate'] if hr_info['heart_rate'] > 0 else None)
     respiration_rpm = extract_respiration_rate(raw_pulse, fps=fps)
 
     # -------------------------------------------------------------------
@@ -198,12 +202,14 @@ def extract_physio(frame_buffer: list, fps: float = 30.0) -> dict:
 
     # Validate output values: set to None if confidence is too low (< 0.15) or HR is 0
     final_hr = hr_info['heart_rate'] if (hr_info['heart_rate'] > 0 and confidence >= 0.15) else None
-    final_hrv = hrv_info['rmssd_ms'] if (hrv_info['rmssd_ms'] is not None and confidence >= 0.15) else None
+    final_sys = sys_bp if (final_hr is not None) else None
+    final_dia = dia_bp if (final_hr is not None) else None
     final_resp = respiration_rpm if (respiration_rpm is not None and confidence >= 0.15) else None
 
     return {
         "hr": final_hr,
-        "hrv": final_hrv,
+        "bp_sys": final_sys,
+        "bp_dia": final_dia,
         "respiration": final_resp,
         "confidence": confidence
     }
@@ -223,5 +229,5 @@ if __name__ == "__main__":
 
     result = extract_physio(dummy_frames, fps=30.0)
     print("Test Result Output Structure:", result)
-    assert "hr" in result and "hrv" in result and "respiration" in result and "confidence" in result
+    assert "hr" in result and "bp_sys" in result and "bp_dia" in result and "respiration" in result and "confidence" in result
     print("[SUCCESS] extract_physio pipeline interface verified!")
